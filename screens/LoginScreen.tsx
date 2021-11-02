@@ -17,11 +17,22 @@ export default function LoginScreen() {
 
         Google
             .logInAsync(config)
-            .then((resultGoogle) => {
-                console.log('resultGoogle', resultGoogle);
-                api.post("google", resultGoogle).then(resultApi => {
-                    
-                    console.log('resultApi', resultApi);
+            .then((resultGoogle: any) => {
+                api.post("google", {
+                    AccessToken: resultGoogle.accessToken,
+                    IdToken: resultGoogle.idToken,
+                    RefreshToken: resultGoogle.refreshToken,
+                    Type: resultGoogle.type,
+                    User: {
+                        Email: resultGoogle.user.email,
+                        FamilyName: resultGoogle.user.familyName,
+                        GivenName: resultGoogle.user.givenName,
+                        Id: resultGoogle.user.id,
+                        Name: resultGoogle.user.name,
+                        PhotoUrl: resultGoogle.user.photoUrl,
+                    },
+                }).then(resultApi => {
+                    console.log('resultApi', resultApi.data);
                 }).catch(err => {
                     console.log('err resultApi', err);
                 })

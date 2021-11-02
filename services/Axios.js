@@ -9,7 +9,7 @@ const url = (typeof manifest.packagerOpts === `object`) && manifest.packagerOpts
 console.log(url);
 
 const api = axios.create({
-    baseURL: `https://192.168.1.82:5001/`,
+    baseURL: `http://10.0.2.2:5000/`,
     headers: { 'X-Custom-Header': 'foobar' }
 });
 
