@@ -7,7 +7,8 @@ import { ColorSchemeName, Pressable } from 'react-native';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
-import LoginScreen from '../screens/LoginScreen';
+import CreateLoginScreen from '../screens/Login/CreateLoginScreen';
+import LoginScreen from '../screens/Login/LoginScreen';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
 import TabOneScreen from '../screens/TabOneScreen';
@@ -88,6 +89,7 @@ function LoginNavigator() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="CreateLogin" component={CreateLoginScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

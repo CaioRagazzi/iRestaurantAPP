@@ -1,11 +1,11 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Button, Center, Divider, Icon, Input, Stack } from "native-base";
+import { Button, Center, Divider, Icon, Input, Stack, Text } from "native-base";
 import React, { useState } from "react";
 import { AntDesign } from "@expo/vector-icons"
-import api from "../services/Axios";
+import api from "../../services/Axios";
 import * as Google from 'expo-google-app-auth';
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }: any) {
 
     const [passwordVisible, setPasswordVisible] = useState(false)
 
@@ -18,6 +18,7 @@ export default function LoginScreen() {
         Google
             .logInAsync(config)
             .then((resultGoogle: any) => {
+                console.log('oi');
                 api.post("google", {
                     AccessToken: resultGoogle.accessToken,
                     IdToken: resultGoogle.idToken,
@@ -44,6 +45,10 @@ export default function LoginScreen() {
 
     const ShowPassword = () => {
         setPasswordVisible(!passwordVisible);
+    }
+
+    const handleCreateLogin = () => {
+        navigation.navigate('CreateLogin');
     }
 
     return (
@@ -101,6 +106,7 @@ export default function LoginScreen() {
                     onPress={() => HandleGoogleAuth()}>
                     Google Auth
                 </Button>
+                <Text underline onPress={() => handleCreateLogin()}>Create Login</Text>
             </Stack>
         </Center>
     )
