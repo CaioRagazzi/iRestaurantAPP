@@ -3,6 +3,7 @@ import { Button, Center, Divider, Icon, Input, Stack } from "native-base";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useToast } from 'native-base';
 import validator from 'validator';
+import api from "../../services/Axios";
 
 export default function LoginScreen({ navigation }: any) {
 
@@ -24,6 +25,24 @@ export default function LoginScreen({ navigation }: any) {
 
     const handleBack = () => {
         navigation.goBack();
+    }
+
+    const handleCreate = () => {
+        console.log(name);
+        console.log(restaurantName);
+        console.log(email);
+        console.log(password);
+
+        api.post("userrestaurant", {
+            name: name,
+            email: email,
+            RestaurantName: restaurantName,
+            password: password
+        }).then(data => {
+            console.log(data);
+        }).catch(err => {
+            console.log(err.response.data);
+        })
     }
 
     const handleChangeName = ({ nativeEvent: { eventCount, target, text } }: any) => {
@@ -156,7 +175,7 @@ export default function LoginScreen({ navigation }: any) {
                         base: "75%",
                         md: "25%",
                     }}
-                    onPress={() => { }}>
+                    onPress={() => handleCreate()}>
                     Create
                 </Button>
                 <Button

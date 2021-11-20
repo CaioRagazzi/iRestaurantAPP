@@ -1,47 +1,11 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Button, Center, Divider, Icon, Input, Stack, Text } from "native-base";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AntDesign } from "@expo/vector-icons"
-import api from "../../services/Axios";
-import * as Google from 'expo-google-app-auth';
 
 export default function LoginScreen({ navigation }: any) {
 
     const [passwordVisible, setPasswordVisible] = useState(false)
-
-    const HandleGoogleAuth = () => {
-        const config = {
-            androidClientId: '1000389315299-0ke0egulbcst2hnkmcinkb7cea0se8ni.apps.googleusercontent.com',
-            scopes: ['profile', 'email']
-        }
-
-        Google
-            .logInAsync(config)
-            .then((resultGoogle: any) => {
-                console.log('oi');
-                api.post("google", {
-                    AccessToken: resultGoogle.accessToken,
-                    IdToken: resultGoogle.idToken,
-                    RefreshToken: resultGoogle.refreshToken,
-                    Type: resultGoogle.type,
-                    User: {
-                        Email: resultGoogle.user.email,
-                        FamilyName: resultGoogle.user.familyName,
-                        GivenName: resultGoogle.user.givenName,
-                        Id: resultGoogle.user.id,
-                        Name: resultGoogle.user.name,
-                        PhotoUrl: resultGoogle.user.photoUrl,
-                    },
-                }).then(resultApi => {
-                    console.log('resultApi', resultApi.data);
-                }).catch(err => {
-                    console.log('err resultApi', err);
-                })
-            })
-            .catch(error => {
-                console.log(error.response);
-            })
-    }
 
     const ShowPassword = () => {
         setPasswordVisible(!passwordVisible);
@@ -93,19 +57,10 @@ export default function LoginScreen({ navigation }: any) {
                         base: "75%",
                         md: "25%",
                     }}
-                    onPress={() => HandleGoogleAuth()}>
+                    onPress={() => {}}>
                     Log in
                 </Button>
                 <Divider my="2" />
-                <Button
-                    leftIcon={<Icon as={AntDesign} name="google" size={4} />}
-                    w={{
-                        base: "75%",
-                        md: "25%",
-                    }}
-                    onPress={() => HandleGoogleAuth()}>
-                    Google Auth
-                </Button>
                 <Text underline onPress={() => handleCreateLogin()}>Create Login</Text>
             </Stack>
         </Center>
