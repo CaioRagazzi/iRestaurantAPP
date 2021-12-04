@@ -7,97 +7,130 @@ import { ColorSchemeName, Pressable } from 'react-native';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
+import HomeTabScreen from '../screens/Home/HomeTabScreen';
 import CreateLoginScreen from '../screens/Login/CreateLoginScreen';
 import LoginScreen from '../screens/Login/LoginScreen';
-import ModalScreen from '../screens/ModalScreen';
-import NotFoundScreen from '../screens/NotFoundScreen';
-import TabOneScreen from '../screens/TabOneScreen';
-import TabTwoScreen from '../screens/TabTwoScreen';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
+import { useState as useHookState } from "@hookstate/core";
+import AuthStore from "../store/AuthStore";
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerItemList } from '@react-navigation/drawer';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import CategoryScreen from '../screens/Categories/CategoryScreen';
+import MenuScreen from '../screens/Menu/MenuScreen';
+
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
+
+  const loggedUser = useHookState(AuthStore);
+
+  const Stack = createNativeStackNavigator();
+
+  function LoginRootNavigator() {
+    return (
+      <Stack.Navigator>
+        <Stack.Screen name="LoginStack" component={LoginNavigator} options={{ headerShown: false }} />
+      </Stack.Navigator>
+    );
+  }
+
+  const BottomTab = createBottomTabNavigator<RootTabParamList>();
+
+  function BottomTabNavigator() {
+    const colorScheme = useColorScheme();
+
+    return (
+      <BottomTab.Navigator
+        initialRouteName="TabOne"
+        screenOptions={{
+          tabBarActiveTintColor: Colors[colorScheme].tint, headerShown: false
+        }}>
+        <BottomTab.Screen
+          name="TabOne"
+          component={HomeTabScreen}
+          options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
+            title: 'Home',
+            tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+            headerRight: () => (
+              <Pressable
+                onPress={() => navigation.navigate('Modal')}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                })}>
+                <FontAwesome
+                  name="info-circle"
+                  size={25}
+                  color={Colors[colorScheme].text}
+                  style={{ marginRight: 15 }}
+                />
+              </Pressable>
+            ),
+          })}
+        />
+      </BottomTab.Navigator>
+    );
+  }
+
+  function LoginNavigator() {
+    return (
+      <Stack.Navigator>
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CreateLogin" component={CreateLoginScreen} options={{ headerShown: false }} />
+      </Stack.Navigator>
+    );
+  }
+
+
+  function TabBarIcon(props: {
+    name: React.ComponentProps<typeof FontAwesome>['name'];
+    color: string;
+  }) {
+    return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
+  }
+
+  const Drawer = createDrawerNavigator();
+
+  function DrawerNavigator() {
+    return (
+      <Drawer.Navigator
+        initialRouteName="Home"
+        drawerContent={(props) => <CustomDrawerContent {...props} />}>
+        <Drawer.Screen
+          name="Home"
+          component={BottomTabNavigator} />
+        <Drawer.Screen
+          name="Menu"
+          component={MenuScreen} />
+        <Drawer.Screen
+          name="Categories"
+          component={CategoryScreen} />
+      </Drawer.Navigator>
+    );
+  }
+
+  function CustomDrawerContent(props: any) {
+    return (
+      <DrawerContentScrollView {...props}>
+        <DrawerItemList {...props} />
+        <DrawerItem
+          label="Logout"
+          onPress={() => {
+            AsyncStorage.clear()
+            loggedUser.merge({ token: '', logged: false, userId: 0, email: '' })
+          }}
+        />
+      </DrawerContentScrollView>
+    );
+  }
+
   return (
     <NavigationContainer
       linking={LinkingConfiguration}>
-      <RootNavigator />
+      {
+        loggedUser.get().logged ?
+          <DrawerNavigator /> :
+          <LoginRootNavigator />
+      }
     </NavigationContainer>
   );
-}
-
-const Stack = createNativeStackNavigator();
-
-function RootNavigator() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="LoginStack" component={LoginNavigator} options={{ headerShown: false }} />
-      {/* <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
-      <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen name="Modal" component={ModalScreen} />
-      </Stack.Group> */}
-    </Stack.Navigator>
-  );
-}
-
-const BottomTab = createBottomTabNavigator<RootTabParamList>();
-
-function BottomTabNavigator() {
-  const colorScheme = useColorScheme();
-
-  return (
-    <BottomTab.Navigator
-      initialRouteName="TabOne"
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme].tint,
-      }}>
-      <BottomTab.Screen
-        name="TabOne"
-        component={TabOneScreen}
-        options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Pressable
-              onPress={() => navigation.navigate('Modal')}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.5 : 1,
-              })}>
-              <FontAwesome
-                name="info-circle"
-                size={25}
-                color={Colors[colorScheme].text}
-                style={{ marginRight: 15 }}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-      <BottomTab.Screen
-        name="TabTwo"
-        component={TabTwoScreen}
-        options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        }}
-      />
-    </BottomTab.Navigator>
-  );
-}
-
-function LoginNavigator() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="CreateLogin" component={CreateLoginScreen} options={{ headerShown: false }} />
-    </Stack.Navigator>
-  );
-}
-
-
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
 }

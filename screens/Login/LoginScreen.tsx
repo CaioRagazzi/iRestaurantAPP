@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Keyboard } from "react-native";
+import { useState as useHookState } from "@hookstate/core";
+import AuthStore from "../../store/AuthStore";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Button, Center, Divider, Icon, Input, Stack, Text, useToast } from "native-base";
 import api from "../../services/Axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import jwtDecode from "jwt-decode";
 
 export default function LoginScreen({ navigation }: any) {
 
@@ -12,6 +15,17 @@ export default function LoginScreen({ navigation }: any) {
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
     const toast = useToast()
+    const loggedUser = useHookState(AuthStore);
+
+    useEffect(() => {
+        AsyncStorage.getItem('jwt').then(res => {
+            console.log(res);
+            if (res) {
+                var decodedJwt: any = jwtDecode(res)
+                loggedUser.merge({ token: res, logged: true, userId: +decodedJwt.UserId, email: decodedJwt.email })
+            }
+        })
+    }, [])
 
     const ShowPassword = () => {
         setPasswordVisible(!passwordVisible);
@@ -23,11 +37,11 @@ export default function LoginScreen({ navigation }: any) {
 
     const storeData = async (value: any) => {
         try {
-          await AsyncStorage.setItem('@storage_Key', value)
+            await AsyncStorage.setItem('jwt', value)
         } catch (e) {
-          // saving error
+            // saving error
         }
-      }
+    }
 
     const handleLogin = () => {
         Keyboard.dismiss()
@@ -37,8 +51,8 @@ export default function LoginScreen({ navigation }: any) {
             password: password
         }).then(async (data) => {
             await storeData(data.data)
-            console.log(data.data);
-            setLoading(false)
+            var decodedJwt: any = jwtDecode(data.data)
+            loggedUser.merge({ token: data.data, logged: true, userId: +decodedJwt.UserId, email: decodedJwt.email })
         }).catch(err => {
             setLoading(false)
             toast.show({
