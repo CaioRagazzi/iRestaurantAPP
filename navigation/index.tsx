@@ -18,6 +18,7 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerItemL
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CategoryScreen from '../screens/Categories/CategoryScreen';
 import MenuScreen from '../screens/Menu/MenuScreen';
+import CreateCategoryScreen from '../screens/Categories/CreateCategory';
 
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -80,6 +81,15 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
     );
   }
 
+  function CategoryNavigator() {
+    return (
+      <Stack.Navigator>
+        <Stack.Screen name="ListCategories" component={CategoryScreen} options={{ headerShown: true }} />
+        <Stack.Screen name="CreateCategories" component={CreateCategoryScreen} options={{ headerShown: true }} />
+      </Stack.Navigator>
+    );
+  }
+
 
   function TabBarIcon(props: {
     name: React.ComponentProps<typeof FontAwesome>['name'];
@@ -96,14 +106,17 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
         initialRouteName="Home"
         drawerContent={(props) => <CustomDrawerContent {...props} />}>
         <Drawer.Screen
+          options={{ headerShown: true }}
           name="Home"
           component={BottomTabNavigator} />
         <Drawer.Screen
+          options={{ headerShown: false }}
           name="Menu"
           component={MenuScreen} />
         <Drawer.Screen
+          options={{ headerShown: false }}
           name="Categories"
-          component={CategoryScreen} />
+          component={CategoryNavigator} />
       </Drawer.Navigator>
     );
   }
