@@ -127,8 +127,8 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
         <DrawerItemList {...props} />
         <DrawerItem
           label="Logout"
-          onPress={() => {
-            AsyncStorage.clear()
+          onPress={async () => {
+            await AsyncStorage.clear()
             loggedUser.merge({ token: '', logged: false, userId: 0, email: '' })
           }}
         />

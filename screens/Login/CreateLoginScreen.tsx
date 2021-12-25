@@ -39,7 +39,6 @@ export default function LoginScreen({ navigation }: any) {
             RestaurantName: restaurantName,
             password: password
         }).then(data => {
-            console.log(data);
             setIsLoading(false);
             handleBack();
             toast.show({

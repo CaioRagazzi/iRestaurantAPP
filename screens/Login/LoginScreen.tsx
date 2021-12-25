@@ -19,7 +19,6 @@ export default function LoginScreen({ navigation }: any) {
 
     useEffect(() => {
         AsyncStorage.getItem('jwt').then(res => {
-            console.log(res);
             if (res) {
                 var decodedJwt: any = jwtDecode(res)
                 loggedUser.merge({ token: res, logged: true, userId: +decodedJwt.UserId, email: decodedJwt.email })
@@ -49,7 +48,7 @@ export default function LoginScreen({ navigation }: any) {
         api.post("auth", {
             email: email,
             password: password
-        }).then(async (data) => {
+        }).then(async (data) => {            
             await storeData(data.data)
             var decodedJwt: any = jwtDecode(data.data)
             loggedUser.merge({ token: data.data, logged: true, userId: +decodedJwt.UserId, email: decodedJwt.email })

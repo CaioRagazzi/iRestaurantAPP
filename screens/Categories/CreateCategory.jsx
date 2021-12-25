@@ -1,15 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Stack, FormControl, Icon, Input, WarningOutlineIcon, useToast } from "native-base";
 import { MaterialIcons } from "@expo/vector-icons";
 import api from "../../services/Axios";
 import { Keyboard } from "react-native";
 
-export default function CreateCategoryScreen({ navigation }) {
+export default function CreateCategoryScreen({ route, navigation }) {
 
+    const [id, setId] = useState(0);
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
+    const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false)
     const toast = useToast()
+
+    useEffect(() => {
+        navigation.setOptions({
+            title: 'Create Category'
+        })
+        const params = route.params;
+        if (params) {
+            setIsEditing(true);
+            setId(params.category.id);
+            setName(params.category.name);
+            setDescription(params.category.description);
+            navigation.setOptions({
+                title: 'Edit Category'
+            })
+        }
+    }, [])
 
     const handleChangeName = ({ nativeEvent: { eventCount, target, text } }) => {
         setName(text);
@@ -40,6 +58,32 @@ export default function CreateCategoryScreen({ navigation }) {
                 title: "Error!",
                 status: "error",
                 description: "Error creating category =(.",
+                duration: 3000
+            })
+        })
+    }
+
+    const handleEditCategory = async () => {
+        Keyboard.dismiss();
+        setLoading(true);
+        api.put(`foodcategory/${id}`, {
+            name: name,
+            description: description
+        }).then(data => {
+            setLoading(false);
+            toast.show({
+                title: "Updated!",
+                status: "success",
+                description: "Category Updated!.",
+                duration: 3000
+            })
+            navigation.goBack();
+        }).catch(data => {
+            setLoading(false);
+            toast.show({
+                title: "Error!",
+                status: "error",
+                description: "Error updating category =(.",
                 duration: 3000
             })
         })
@@ -102,8 +146,8 @@ export default function CreateCategoryScreen({ navigation }) {
                     md: "25%",
                 }}
                 isDisabled={name.trim() === ''}
-                onPress={() => handleCreateCategory()}>
-                Create
+                onPress={() => isEditing ? handleEditCategory() : handleCreateCategory()}>
+                {isEditing ? 'Save' : 'Create'}
             </Button>
         </Stack>
     )
