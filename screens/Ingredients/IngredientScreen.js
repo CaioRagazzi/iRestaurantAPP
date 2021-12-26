@@ -6,27 +6,29 @@ import {
     Text,
     Spacer
 } from "native-base";
-import React, { useLayoutEffect, useState, useEffect } from "react";
+import React, { useLayoutEffect, useState, useEffect, useContext } from "react";
+import { IngredientStore } from "../../store/IngredientsStore";
 import { useIsFocused } from "@react-navigation/native";
 import { TouchableNativeFeedback, View } from "react-native";
 import api from "../../services/Axios";
 
-export default function CategoryScreen({ navigation }) {
+export default function IngredientScreen({ route, navigation }) {
 
-    const [categories, setCategories] = useState([])
+    const [ingredients, setIngredients] = useState([])
     const isFocused = useIsFocused();
     const [perPage, setPerPage] = useState(25)
     const [page, setPage] = useState(1)
     const [totalPages, setTotalPages] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
+    const ingredientStore = useContext(IngredientStore);
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: 'Categories',
+            title: 'Ingredients',
             headerRight: () => (
                 <IconButton
                     icon={<AddIcon si name="emoji-happy" size="4" />}
-                    onPress={() => { navigation.navigate('CreateCategories') }}
+                    onPress={() => { navigation.navigate('SaveIngredient') }}
                     borderRadius="full" />
             ),
             headerLeft: () => (
@@ -40,19 +42,20 @@ export default function CategoryScreen({ navigation }) {
     }, [navigation, isFocused]);
 
     useEffect(() => {
-        setCategories([]);
+        ingredientStore.list = [];
+        console.log('teste caio', ingredientStore.get())
     }, [])
 
     useEffect(() => {
-        getCategories();
+        getIngredients();
     }, [page])
 
-    const getCategories = () => {
+    const getIngredients = () => {
         setIsLoading(true)
-        api.get(`foodcategory?page=${page}&pageSize=${perPage}`)
+        api.get(`foodingredient?page=${page}&pageSize=${perPage}`)
             .then(data => {
                 setTotalPages(data.data.pageCount);
-                setCategories(oldArray => [...oldArray, ...data.data.results]);
+                ingredientStore.list = [...ingredientStore.list, ...data.data.results]
                 setIsLoading(false)
             })
             .catch(err => {
@@ -61,8 +64,8 @@ export default function CategoryScreen({ navigation }) {
             })
     }
 
-    const handleTouch = (category) => {
-        navigation.navigate('CreateCategories', { category })
+    const handleTouch = (ingredient) => {
+        navigation.navigate('SaveIngredient', { ingredient })
     }
 
     const handleLongPress = (category) => {
@@ -75,9 +78,9 @@ export default function CategoryScreen({ navigation }) {
     }
 
     const refresh = () => {
-        setCategories([]);
+        setIngredients([]);
         if (page === 1) {
-            getCategories()
+            getIngredients()
         }
         setPage(1);
     }
@@ -85,14 +88,14 @@ export default function CategoryScreen({ navigation }) {
     return (
         <View style={{ flex: 1 }}>
             <FlatList
-                data={categories}
+                data={ingredientStore.list}
                 refreshing={isLoading}
                 onRefresh={() => refresh()}
                 onEndReached={() => handleEndReached()}
                 onEndReachedThreshold={0.5}
                 renderItem={({ item }) => (
                     <TouchableNativeFeedback
-                        onLongPress={() => handleLongPress(item) }
+                        onLongPress={() => handleLongPress(item)}
                         onPress={() => handleTouch(item)}>
                         <Box
                             borderBottomWidth="1"

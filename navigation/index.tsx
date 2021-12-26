@@ -18,7 +18,10 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerItemL
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CategoryScreen from '../screens/Categories/CategoryScreen';
 import MenuScreen from '../screens/Menu/MenuScreen';
-import CreateCategoryScreen from '../screens/Categories/CreateCategory';
+import CreateCategoryScreen from '../screens/Categories/SaveCategoryScreen';
+import IngredientScreen from '../screens/Ingredients/IngredientScreen';
+import SaveIngredientScreen from '../screens/Ingredients/SaveIngredientScreen';
+import { IngredientStore } from "../store/IngredientsStore";
 
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -85,8 +88,19 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
     return (
       <Stack.Navigator>
         <Stack.Screen name="ListCategories" component={CategoryScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="CreateCategories" component={CreateCategoryScreen} options={{ headerShown: true }} />
+        <Stack.Screen name="CreateCategories" component={CreateCategoryScreen} options={{ headerShown: true, title: '' }} />
       </Stack.Navigator>
+    );
+  }
+
+  function IngredientNavigator() {
+    return (
+      <IngredientStore.Provider value={null}>
+        <Stack.Navigator>
+          <Stack.Screen name="ListIngredient" component={IngredientScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="SaveIngredient" component={SaveIngredientScreen} options={{ headerShown: true, title: '' }} />
+        </Stack.Navigator>
+      </IngredientStore.Provider>
     );
   }
 
@@ -117,6 +131,10 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
           options={{ headerShown: false }}
           name="Categories"
           component={CategoryNavigator} />
+        <Drawer.Screen
+          options={{ headerShown: false }}
+          name="Ingredients"
+          component={IngredientNavigator} />
       </Drawer.Navigator>
     );
   }
