@@ -21,7 +21,7 @@ import MenuScreen from '../screens/Menu/MenuScreen';
 import CreateCategoryScreen from '../screens/Categories/SaveCategoryScreen';
 import IngredientScreen from '../screens/Ingredients/IngredientScreen';
 import SaveIngredientScreen from '../screens/Ingredients/SaveIngredientScreen';
-import { IngredientStore } from "../store/IngredientsStore";
+import IngredientContextProvider from "../store/IngredientsStore";
 
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -95,12 +95,12 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
 
   function IngredientNavigator() {
     return (
-      <IngredientStore.Provider value={null}>
+      <IngredientContextProvider>
         <Stack.Navigator>
           <Stack.Screen name="ListIngredient" component={IngredientScreen} options={{ headerShown: true }} />
           <Stack.Screen name="SaveIngredient" component={SaveIngredientScreen} options={{ headerShown: true, title: '' }} />
         </Stack.Navigator>
-      </IngredientStore.Provider>
+      </IngredientContextProvider>
     );
   }
 

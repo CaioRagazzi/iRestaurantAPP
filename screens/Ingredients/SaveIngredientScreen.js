@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Button, Stack, FormControl, Icon, Input, WarningOutlineIcon, useToast, HStack, Spinner, Heading } from "native-base";
 import { MaterialIcons } from "@expo/vector-icons";
 import api from "../../services/Axios";
 import { Keyboard } from "react-native";
+import { IngredientContext } from "../../store/IngredientsStore";
 
 export default function SaveIngredientScreen({ route, navigation }) {
     const [id, setId] = useState(0);
@@ -12,6 +13,7 @@ export default function SaveIngredientScreen({ route, navigation }) {
     const [screenLoading, setScreenLoading] = useState(true)
     const [loading, setLoading] = useState(false)
     const toast = useToast()
+    const ingredientContext = useContext(IngredientContext)
 
     useEffect(() => {
         setScreenLoading(true);
@@ -19,9 +21,9 @@ export default function SaveIngredientScreen({ route, navigation }) {
         const params = route.params;
         if (params) {
             setIsEditing(true);
-            setId(params.category.id);
-            setName(params.category.name);
-            setDescription(params.category.description);
+            setId(params.ingredient.id);
+            setName(params.ingredient.name);
+            setDescription(params.ingredient.description);
             navigation.setOptions({
                 title: 'Edit Ingredient'
             })
@@ -55,6 +57,7 @@ export default function SaveIngredientScreen({ route, navigation }) {
                 description: "Ingredient Created!.",
                 duration: 3000
             })
+            ingredientContext.refresh();
             navigation.goBack();
         }).catch(data => {
             console.log(data.response);

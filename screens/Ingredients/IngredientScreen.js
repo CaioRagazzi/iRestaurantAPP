@@ -6,21 +6,13 @@ import {
     Text,
     Spacer
 } from "native-base";
-import React, { useLayoutEffect, useState, useEffect, useContext } from "react";
-import { IngredientStore } from "../../store/IngredientsStore";
-import { useIsFocused } from "@react-navigation/native";
+import React, { useLayoutEffect, useEffect, useContext } from "react";
+import { IngredientContext } from "../../store/IngredientsStore";
 import { TouchableNativeFeedback, View } from "react-native";
-import api from "../../services/Axios";
 
 export default function IngredientScreen({ route, navigation }) {
 
-    const [ingredients, setIngredients] = useState([])
-    const isFocused = useIsFocused();
-    const [perPage, setPerPage] = useState(25)
-    const [page, setPage] = useState(1)
-    const [totalPages, setTotalPages] = useState(0)
-    const [isLoading, setIsLoading] = useState(true)
-    const ingredientStore = useContext(IngredientStore);
+    const ingredientContext = useContext(IngredientContext);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -39,30 +31,13 @@ export default function IngredientScreen({ route, navigation }) {
             ),
         });
 
-    }, [navigation, isFocused]);
+    }, [navigation]);
 
     useEffect(() => {
-        ingredientStore.list = [];
-        console.log('teste caio', ingredientStore.get())
-    }, [])
-
-    useEffect(() => {
-        getIngredients();
-    }, [page])
-
-    const getIngredients = () => {
-        setIsLoading(true)
-        api.get(`foodingredient?page=${page}&pageSize=${perPage}`)
-            .then(data => {
-                setTotalPages(data.data.pageCount);
-                ingredientStore.list = [...ingredientStore.list, ...data.data.results]
-                setIsLoading(false)
-            })
-            .catch(err => {
-                setIsLoading(false)
-                console.log(err.response);
-            })
-    }
+        if (ingredientContext.listIngredients.length === 0) {
+            ingredientContext.getIngredients(1);
+        }
+    }, [ingredientContext.listIngredients])
 
     const handleTouch = (ingredient) => {
         navigation.navigate('SaveIngredient', { ingredient })
@@ -73,26 +48,19 @@ export default function IngredientScreen({ route, navigation }) {
     }
 
     const handleEndReached = () => {
-        if (page >= totalPages) return;
-        setPage(page + 1)
-    }
-
-    const refresh = () => {
-        setIngredients([]);
-        if (page === 1) {
-            getIngredients()
-        }
-        setPage(1);
+        console.log('oi chegou no final');
+        if (ingredientContext.page > ingredientContext.totalPages) return;
+        ingredientContext.setPage(ingredientContext.page + 1)
     }
 
     return (
-        <View style={{ flex: 1 }}>
+        <View style={{ flexGrow: 0 }}>
             <FlatList
-                data={ingredientStore.list}
-                refreshing={isLoading}
-                onRefresh={() => refresh()}
+                data={ingredientContext.listIngredients}
+                refreshing={ingredientContext.isLoading}
+                onRefresh={() => ingredientContext.refresh()}
                 onEndReached={() => handleEndReached()}
-                onEndReachedThreshold={0.5}
+                onEndReachedThreshold={0}
                 renderItem={({ item }) => (
                     <TouchableNativeFeedback
                         onLongPress={() => handleLongPress(item)}
