@@ -4,15 +4,21 @@ import {
     HStack,
     VStack,
     Text,
-    Spacer
+    Spacer,
+    useToast
 } from "native-base";
-import React, { useLayoutEffect, useEffect, useContext } from "react";
+import React, { useLayoutEffect, useEffect, useContext, useState } from "react";
 import { IngredientContext } from "../../store/IngredientsStore";
 import { TouchableNativeFeedback, View } from "react-native";
+import AlertShowDialog from "../../components/AlertShowDialog";
+import api from "../../services/Axios";
 
 export default function IngredientScreen({ route, navigation }) {
 
     const ingredientContext = useContext(IngredientContext);
+    const [showAlertDelete, setShowAlertDelete] = useState(false)
+    const [ingredientToDelete, setIngredientToDelete] = useState(null)
+    const toast = useToast()
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -43,12 +49,25 @@ export default function IngredientScreen({ route, navigation }) {
         navigation.navigate('SaveIngredient', { ingredient })
     }
 
-    const handleLongPress = (category) => {
-        // api.delete(`foodcategory/${category.id}`)
+    const handleLongPress = (categoryParam) => {
+        setShowAlertDelete(true)
+        setIngredientToDelete(categoryParam)
+    }
+
+    const handleDelete = () => {
+        api.delete(`foodingredient/${ingredientToDelete.id}`).then(data => {
+            toast.show({
+                title: "Deleted!",
+                status: "success",
+                description: "Ingredient Deleted!.",
+                duration: 3000
+            })
+            ingredientContext.refresh()
+            setShowAlertDelete(false)
+        })
     }
 
     const handleEndReached = () => {
-        console.log('oi chegou no final');
         if (ingredientContext.page > ingredientContext.totalPages) return;
         ingredientContext.setPage(ingredientContext.page + 1)
     }
@@ -60,7 +79,7 @@ export default function IngredientScreen({ route, navigation }) {
                 refreshing={ingredientContext.isLoading}
                 onRefresh={() => ingredientContext.refresh()}
                 onEndReached={() => handleEndReached()}
-                onEndReachedThreshold={0}
+                onEndReachedThreshold={0.8}
                 renderItem={({ item }) => (
                     <TouchableNativeFeedback
                         onLongPress={() => handleLongPress(item)}
@@ -115,6 +134,11 @@ export default function IngredientScreen({ route, navigation }) {
                 )}
                 keyExtractor={(item) => item.id}
             />
+            <AlertShowDialog
+                message={`Are you sure you want to delete ${ingredientToDelete?.name}`}
+                isClosed={showAlertDelete}
+                onCancel={() => setShowAlertDelete(false)}
+                onOk={handleDelete} />
         </View>
     )
 }

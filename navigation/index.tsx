@@ -22,6 +22,7 @@ import CreateCategoryScreen from '../screens/Categories/SaveCategoryScreen';
 import IngredientScreen from '../screens/Ingredients/IngredientScreen';
 import SaveIngredientScreen from '../screens/Ingredients/SaveIngredientScreen';
 import IngredientContextProvider from "../store/IngredientsStore";
+import CategoryContextProvider from "../store/CategoriesStore";
 
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -84,12 +85,22 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
     );
   }
 
+  function MenuNavigator() {
+    return (
+        <Stack.Navigator>
+          <Stack.Screen name="ListMenu" component={MenuScreen} options={{ headerShown: true }} />
+        </Stack.Navigator>
+    );
+  }
+
   function CategoryNavigator() {
     return (
-      <Stack.Navigator>
-        <Stack.Screen name="ListCategories" component={CategoryScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="CreateCategories" component={CreateCategoryScreen} options={{ headerShown: true, title: '' }} />
-      </Stack.Navigator>
+      <CategoryContextProvider>
+        <Stack.Navigator>
+          <Stack.Screen name="ListCategories" component={CategoryScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="CreateCategories" component={CreateCategoryScreen} options={{ headerShown: true, title: '' }} />
+        </Stack.Navigator>
+      </CategoryContextProvider>
     );
   }
 
@@ -126,7 +137,7 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
         <Drawer.Screen
           options={{ headerShown: false }}
           name="Menu"
-          component={MenuScreen} />
+          component={MenuNavigator} />
         <Drawer.Screen
           options={{ headerShown: false }}
           name="Categories"

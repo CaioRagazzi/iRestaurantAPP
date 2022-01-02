@@ -4,21 +4,21 @@ import {
     HStack,
     VStack,
     Text,
-    Spacer
+    Spacer,
+    useToast
 } from "native-base";
-import React, { useLayoutEffect, useState, useEffect } from "react";
-import { useIsFocused } from "@react-navigation/native";
+import React, { useLayoutEffect, useContext, useEffect, useState } from "react";
+import { CategoryContext } from "../../store/CategoriesStore";
 import { TouchableNativeFeedback, View } from "react-native";
+import AlertShowDialog from "../../components/AlertShowDialog";
 import api from "../../services/Axios";
 
 export default function CategoryScreen({ navigation }) {
 
-    const [categories, setCategories] = useState([])
-    const isFocused = useIsFocused();
-    const [perPage, setPerPage] = useState(25)
-    const [page, setPage] = useState(1)
-    const [totalPages, setTotalPages] = useState(0)
-    const [isLoading, setIsLoading] = useState(true)
+    const categoryContext = useContext(CategoryContext);
+    const [showAlertDelete, setShowAlertDelete] = useState(false)
+    const [categoryToDelete, setCategoryToDelete] = useState(null)
+    const toast = useToast()
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -37,62 +37,52 @@ export default function CategoryScreen({ navigation }) {
             ),
         });
 
-    }, [navigation, isFocused]);
+    }, [navigation]);
 
     useEffect(() => {
-        setCategories([]);
-    }, [])
-
-    useEffect(() => {
-        getCategories();
-    }, [page])
-
-    const getCategories = () => {
-        setIsLoading(true)
-        api.get(`foodcategory?page=${page}&pageSize=${perPage}`)
-            .then(data => {
-                setTotalPages(data.data.pageCount);
-                setCategories(oldArray => [...oldArray, ...data.data.results]);
-                setIsLoading(false)
-            })
-            .catch(err => {
-                setIsLoading(false)
-                console.log(err.response);
-            })
-    }
+        if (categoryContext.listCategory.length === 0) {
+            categoryContext.getCategories(1);
+        }
+    }, [categoryContext.listCategory])
 
     const handleTouch = (category) => {
         navigation.navigate('CreateCategories', { category })
     }
 
-    const handleLongPress = (category) => {
-        // api.delete(`foodcategory/${category.id}`)
+    const handleLongPress = (categoryParam) => {
+        setShowAlertDelete(true)
+        setCategoryToDelete(categoryParam)
+    }
+
+    const handleDelete = () => {
+        api.delete(`foodcategory/${categoryToDelete.id}`).then(data => {
+            toast.show({
+                title: "Deleted!",
+                status: "success",
+                description: "Category Deleted!.",
+                duration: 3000
+            })
+            categoryContext.refresh()
+            setShowAlertDelete(false)
+        })
     }
 
     const handleEndReached = () => {
-        if (page >= totalPages) return;
-        setPage(page + 1)
-    }
-
-    const refresh = () => {
-        setCategories([]);
-        if (page === 1) {
-            getCategories()
-        }
-        setPage(1);
+        if (categoryContext.page > categoryContext.totalPages) return;
+        categoryContext.setPage(categoryContext.page + 1)
     }
 
     return (
         <View style={{ flex: 1 }}>
             <FlatList
-                data={categories}
-                refreshing={isLoading}
-                onRefresh={() => refresh()}
+                data={categoryContext.listCategory}
+                refreshing={categoryContext.isLoading}
+                onRefresh={() => categoryContext.refresh()}
                 onEndReached={() => handleEndReached()}
-                onEndReachedThreshold={0.5}
+                onEndReachedThreshold={0.8}
                 renderItem={({ item }) => (
                     <TouchableNativeFeedback
-                        onLongPress={() => handleLongPress(item) }
+                        onLongPress={() => handleLongPress(item)}
                         onPress={() => handleTouch(item)}>
                         <Box
                             borderBottomWidth="1"
@@ -144,6 +134,11 @@ export default function CategoryScreen({ navigation }) {
                 )}
                 keyExtractor={(item) => item.id}
             />
+            <AlertShowDialog
+                message={`Are you sure you want to delete ${categoryToDelete?.name}`}
+                isClosed={showAlertDelete}
+                onCancel={() => setShowAlertDelete(false)}
+                onOk={handleDelete} />
         </View>
     )
 }

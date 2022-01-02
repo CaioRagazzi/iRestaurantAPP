@@ -1,11 +1,11 @@
 import React, { createContext, useState, useEffect, useRef } from "react";
 import api from "../services/Axios";
 
-const IngredientContext = createContext();
+const CategoryContext = createContext();
 
-function IngredientContextProvider({ children }) {
+function CategoryContextProvider({ children }) {
 
-    const [listIngredients, setListIngredients] = useState([])
+    const [listCategory, setListCategory] = useState([])
     const [isLoading, setIsLoading] = useState(false)
     const [page, setPage] = useState(1)
     const [perPage, setPerPage] = useState(50)
@@ -14,16 +14,16 @@ function IngredientContextProvider({ children }) {
     useEffect(() => {
         if (page === 1) return;
 
-        getIngredients(page);
+        getCategories(page);
     }, [page])
 
-    const getIngredients = (pageParam) => {
+    const getCategories = (pageParam) => {
         if (isLoading) return;
         setIsLoading(true)
-        api.get(`foodingredient?page=${pageParam}&pageSize=${perPage}`)
+        api.get(`foodcategory?page=${pageParam}&pageSize=${perPage}`)
             .then(data => {
                 setTotalPages(data.data.pageCount);
-                setListIngredients([...listIngredients, ...data.data.results])
+                setListCategory([...listCategory, ...data.data.results])
                 setIsLoading(false)
             })
             .catch(err => {
@@ -33,16 +33,16 @@ function IngredientContextProvider({ children }) {
     }
 
     const refresh = () => {
-        setListIngredients([]);
+        setListCategory([]);
         setPage(1)
     }
 
     return (
-        <IngredientContext.Provider
+        <CategoryContext.Provider
             value={{
-                listIngredients,
-                setListIngredients,
-                getIngredients,
+                listCategory,
+                setListCategory,
+                getCategories,
                 isLoading,
                 setIsLoading,
                 page,
@@ -55,9 +55,9 @@ function IngredientContextProvider({ children }) {
             }}
         >
             {children}
-        </IngredientContext.Provider>
+        </CategoryContext.Provider>
     )
 }
 
-export default IngredientContextProvider;
-export { IngredientContext }
+export default CategoryContextProvider;
+export { CategoryContext }

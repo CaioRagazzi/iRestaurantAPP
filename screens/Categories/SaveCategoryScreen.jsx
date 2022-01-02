@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Button, Stack, FormControl, Icon, Input, WarningOutlineIcon, useToast, HStack, Spinner, Heading } from "native-base";
 import { MaterialIcons } from "@expo/vector-icons";
 import api from "../../services/Axios";
 import { Keyboard } from "react-native";
+import { CategoryContext } from "../../store/CategoriesStore";
 
 export default function SaveCategoryScreen({ route, navigation }) {
 
@@ -13,6 +14,7 @@ export default function SaveCategoryScreen({ route, navigation }) {
     const [screenLoading, setScreenLoading] = useState(true)
     const [loading, setLoading] = useState(false)
     const toast = useToast()
+    const categoryContext = useContext(CategoryContext)
 
     useEffect(() => {
         setScreenLoading(true);
@@ -56,6 +58,7 @@ export default function SaveCategoryScreen({ route, navigation }) {
                 description: "Category Created!.",
                 duration: 3000
             })
+            categoryContext.refresh();
             navigation.goBack();
         }).catch(data => {
             setLoading(false);
