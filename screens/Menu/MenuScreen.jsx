@@ -10,7 +10,7 @@ export default function MenuScreen({ navigation }) {
             headerRight: () => (
                 <IconButton
                     icon={<AddIcon si name="emoji-happy" size="4" />}
-                    onPress={() => { navigation.navigate('CreateCategories') }}
+                    onPress={() => { navigation.navigate('SaveMenu') }}
                     borderRadius="full" />
             ),
             headerLeft: () => (

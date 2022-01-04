@@ -5,13 +5,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
 import { ColorSchemeName, Pressable } from 'react-native';
 
-import Colors from '../constants/Colors';
-import useColorScheme from '../hooks/useColorScheme';
 import HomeTabScreen from '../screens/Home/HomeTabScreen';
 import CreateLoginScreen from '../screens/Login/CreateLoginScreen';
 import LoginScreen from '../screens/Login/LoginScreen';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
-import LinkingConfiguration from './LinkingConfiguration';
 import { useState as useHookState } from "@hookstate/core";
 import AuthStore from "../store/AuthStore";
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerItemList } from '@react-navigation/drawer';
@@ -23,6 +20,7 @@ import IngredientScreen from '../screens/Ingredients/IngredientScreen';
 import SaveIngredientScreen from '../screens/Ingredients/SaveIngredientScreen';
 import IngredientContextProvider from "../store/IngredientsStore";
 import CategoryContextProvider from "../store/CategoriesStore";
+import SaveMenuScreen from '../screens/Menu/SaveMenuScreen';
 
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -42,13 +40,12 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
   function BottomTabNavigator() {
-    const colorScheme = useColorScheme();
 
     return (
       <BottomTab.Navigator
         initialRouteName="TabOne"
         screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme].tint, headerShown: false
+          headerShown: false
         }}>
         <BottomTab.Screen
           name="TabOne"
@@ -65,7 +62,6 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
                 <FontAwesome
                   name="info-circle"
                   size={25}
-                  color={Colors[colorScheme].text}
                   style={{ marginRight: 15 }}
                 />
               </Pressable>
@@ -89,6 +85,7 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
     return (
         <Stack.Navigator>
           <Stack.Screen name="ListMenu" component={MenuScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="SaveMenu" component={SaveMenuScreen} options={{ headerShown: true }} />
         </Stack.Navigator>
     );
   }
@@ -166,8 +163,7 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   }
 
   return (
-    <NavigationContainer
-      linking={LinkingConfiguration}>
+    <NavigationContainer>
       {
         loggedUser.get().logged ?
           <DrawerNavigator /> :
