@@ -28,7 +28,6 @@ function IngredientContextProvider({ children }) {
             })
             .catch(err => {
                 setIsLoading(false)
-                console.log(err.response);
             })
     }
 

@@ -9,6 +9,7 @@ export default function SaveIngredientScreen({ route, navigation }) {
     const [id, setId] = useState(0);
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
+    const [unit, setUnit] = useState('')
     const [isEditing, setIsEditing] = useState(false);
     const [screenLoading, setScreenLoading] = useState(true)
     const [loading, setLoading] = useState(false)
@@ -24,6 +25,7 @@ export default function SaveIngredientScreen({ route, navigation }) {
             setId(params.ingredient.id);
             setName(params.ingredient.name);
             setDescription(params.ingredient.description);
+            setUnit(params.ingredient.unit);
             navigation.setOptions({
                 title: 'Edit Ingredient'
             })
@@ -39,6 +41,10 @@ export default function SaveIngredientScreen({ route, navigation }) {
         setName(text);
     }
 
+    const handleChangeUnit = ({ nativeEvent: { eventCount, target, text } }) => {
+        setUnit(text);
+    }
+
     const handleChangeDescription = ({ nativeEvent: { eventCount, target, text } }) => {
         setDescription(text);
     }
@@ -48,7 +54,8 @@ export default function SaveIngredientScreen({ route, navigation }) {
         setLoading(true);
         api.post("foodingredient", {
             name: name,
-            description: description
+            description: description,
+            unit: unit
         }).then(data => {
             setLoading(false);
             toast.show({
@@ -60,7 +67,6 @@ export default function SaveIngredientScreen({ route, navigation }) {
             ingredientContext.refresh();
             navigation.goBack();
         }).catch(data => {
-            console.log(data.response);
             setLoading(false);
             toast.show({
                 title: "Error!",
@@ -76,7 +82,8 @@ export default function SaveIngredientScreen({ route, navigation }) {
         setLoading(true);
         api.put(`foodingredient/${id}`, {
             name: name,
-            description: description
+            description: description,
+            unit: unit
         }).then(data => {
             setLoading(false);
             toast.show({
@@ -85,6 +92,7 @@ export default function SaveIngredientScreen({ route, navigation }) {
                 description: "Ingredient Updated!.",
                 duration: 3000
             })
+            ingredientContext.refresh();
             navigation.goBack();
         }).catch(data => {
             setLoading(false);
@@ -127,6 +135,31 @@ export default function SaveIngredientScreen({ route, navigation }) {
                     />
                     <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
                         Name cannot be empty.
+                    </FormControl.ErrorMessage>
+                </FormControl>
+                <FormControl
+                    isInvalid={!unit}
+                    w={{
+                        base: "75%",
+                        md: "100%",
+                    }}
+                >
+                    <Input
+                        value={unit}
+                        onChange={handleChangeUnit}
+                        autoCapitalize="none"
+                        InputLeftElement={
+                            <Icon
+                                as={<MaterialIcons name="person" />}
+                                size={5}
+                                ml="2"
+                                color="muted.400"
+                            />
+                        }
+                        placeholder="Unit"
+                    />
+                    <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                        Unit cannot be empty.
                     </FormControl.ErrorMessage>
                 </FormControl>
                 <FormControl

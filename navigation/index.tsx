@@ -23,7 +23,7 @@ import CategoryContextProvider from "../store/CategoriesStore";
 import SaveMenuScreen from '../screens/Menu/SaveMenuScreen';
 
 
-export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
+export default function Navigation() {
 
   const loggedUser = useHookState(AuthStore);
 

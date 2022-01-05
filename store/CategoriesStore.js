@@ -28,7 +28,6 @@ function CategoryContextProvider({ children }) {
             })
             .catch(err => {
                 setIsLoading(false)
-                console.log(err.response);
             })
     }
 

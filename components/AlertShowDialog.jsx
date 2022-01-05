@@ -4,7 +4,6 @@ import { AlertDialog, Button, Center } from "native-base"
 export default function AlertShowDialog({ isClosed, onCancel, onOk, message }) {
 
     useEffect(() => {
-        console.log(isClosed);
         if (isClosed) {
             setIsOpen(true);
             return
