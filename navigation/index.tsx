@@ -5,10 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
 import { ColorSchemeName, Pressable } from 'react-native';
 
-import HomeTabScreen from '../screens/Home/HomeTabScreen';
+import OrderScreen from '../screens/Order/OrderScreen';
 import CreateLoginScreen from '../screens/Login/CreateLoginScreen';
 import LoginScreen from '../screens/Login/LoginScreen';
-import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import { useState as useHookState } from "@hookstate/core";
 import AuthStore from "../store/AuthStore";
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerItemList } from '@react-navigation/drawer';
@@ -20,7 +19,9 @@ import IngredientScreen from '../screens/Ingredients/IngredientScreen';
 import SaveIngredientScreen from '../screens/Ingredients/SaveIngredientScreen';
 import IngredientContextProvider from "../store/IngredientsStore";
 import CategoryContextProvider from "../store/CategoriesStore";
+import MenuContextProvider from "../store/MenuStore";
 import SaveMenuScreen from '../screens/Menu/SaveMenuScreen';
+import SaveOrderScreen from '../screens/Order/SaveOrderScreen';
 
 
 export default function Navigation() {
@@ -37,38 +38,34 @@ export default function Navigation() {
     );
   }
 
-  const BottomTab = createBottomTabNavigator<RootTabParamList>();
+  const BottomTab = createBottomTabNavigator();
 
   function BottomTabNavigator() {
 
     return (
       <BottomTab.Navigator
-        initialRouteName="TabOne"
+        initialRouteName="Order"
         screenOptions={{
-          headerShown: false
+          headerShown: true
         }}>
         <BottomTab.Screen
-          name="TabOne"
-          component={HomeTabScreen}
-          options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
-            title: 'Home',
-            tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-            headerRight: () => (
-              <Pressable
-                onPress={() => navigation.navigate('Modal')}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.5 : 1,
-                })}>
-                <FontAwesome
-                  name="info-circle"
-                  size={25}
-                  style={{ marginRight: 15 }}
-                />
-              </Pressable>
-            ),
+          name="Order"
+          component={OrderNavigator}
+          options={({ navigation }) => ({
+            headerShown: false,
+            tabBarIcon: ({ color }) => <TabBarIcon name="cart-plus" color={color} />
           })}
         />
       </BottomTab.Navigator>
+    );
+  }
+
+  function OrderNavigator() {
+    return (
+      <Stack.Navigator>
+        <Stack.Screen name="ListOrder" component={OrderScreen} options={{ headerShown: true }} />
+        <Stack.Screen name="SaveOrder" component={SaveOrderScreen} options={{ headerShown: true }} />
+      </Stack.Navigator>
     );
   }
 
@@ -83,10 +80,12 @@ export default function Navigation() {
 
   function MenuNavigator() {
     return (
+      <MenuContextProvider>
         <Stack.Navigator>
           <Stack.Screen name="ListMenu" component={MenuScreen} options={{ headerShown: true }} />
           <Stack.Screen name="SaveMenu" component={SaveMenuScreen} options={{ headerShown: true }} />
         </Stack.Navigator>
+      </MenuContextProvider>
     );
   }
 
@@ -128,7 +127,7 @@ export default function Navigation() {
         initialRouteName="Home"
         drawerContent={(props) => <CustomDrawerContent {...props} />}>
         <Drawer.Screen
-          options={{ headerShown: true }}
+          options={{ headerShown: false }}
           name="Home"
           component={BottomTabNavigator} />
         <Drawer.Screen

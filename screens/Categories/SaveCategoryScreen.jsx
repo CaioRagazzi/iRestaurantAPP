@@ -85,6 +85,7 @@ export default function SaveCategoryScreen({ route, navigation }) {
                 description: "Category Updated!.",
                 duration: 3000
             })
+            categoryContext.refresh();
             navigation.goBack();
         }).catch(data => {
             setLoading(false);

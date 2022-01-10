@@ -1,29 +1,29 @@
 import React, { createContext, useState, useEffect, useRef } from "react";
 import api from "../services/Axios";
 
-const IngredientContext = createContext();
+const MenuContext = createContext();
 
-function IngredientContextProvider({ children }) {
+function MenuContextProvider({ children }) {
 
-    const [listIngredients, setListIngredients] = useState([])
+    const [listMenu, setListMenu] = useState([])
     const [isLoading, setIsLoading] = useState(false)
     const [page, setPage] = useState(1)
-    const [totalPages, setTotalPages] = useState(0)
     const [perPage, setPerPage] = useState(50)
+    const [totalPages, setTotalPages] = useState(0)
 
     useEffect(() => {
         if (page === 1) return;
 
-        getIngredients(page);
+        getMenu(page);
     }, [page])
 
-    const getIngredients = (pageParam) => {
+    const getMenu = (pageParam) => {
         if (isLoading) return;
         setIsLoading(true)
-        api.get(`foodingredient?page=${pageParam}&pageSize=${perPage}`)
+        api.get(`menu?page=${pageParam}&pageSize=${perPage}`)
             .then(data => {
                 setTotalPages(data.data.pageCount);
-                setListIngredients([...listIngredients, ...data.data.results])
+                setListMenu([...listMenu, ...data.data.results])
                 setIsLoading(false)
             })
             .catch(err => {
@@ -32,16 +32,16 @@ function IngredientContextProvider({ children }) {
     }
 
     const refresh = () => {
-        setListIngredients([]);
+        setListMenu([]);
         setPage(1)
     }
 
     return (
-        <IngredientContext.Provider
+        <MenuContext.Provider
             value={{
-                listIngredients,
-                setListIngredients,
-                getIngredients,
+                listMenu,
+                setListMenu,
+                getMenu,
                 isLoading,
                 setIsLoading,
                 page,
@@ -54,9 +54,9 @@ function IngredientContextProvider({ children }) {
             }}
         >
             {children}
-        </IngredientContext.Provider>
+        </MenuContext.Provider>
     )
 }
 
-export default IngredientContextProvider;
-export { IngredientContext }
+export default MenuContextProvider;
+export { MenuContext }

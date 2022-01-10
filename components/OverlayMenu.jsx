@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {
     Button,
     Modal,
@@ -13,19 +13,15 @@ import {
     Input,
     WarningOutlineIcon
 } from "native-base"
+import { IngredientContext } from "../store/IngredientsStore";
 import { TouchableNativeFeedback, SafeAreaView, View } from 'react-native'
-import api from "../services/Axios";
 
-export default function OverlayIngredients({ isOpen, onOverlayIngredientClose, selectedOverlayIngredient }) {
+export default function OverlayMenu({ isOpen, onOverlayIngredientClose, selectedOverlayIngredient }) {
 
-    const [isLoading, setIsLoading] = useState(false)
+    const ingredientContext = useContext(IngredientContext)
     const [isModalQuantityOpen, setIsModalQuantityOpen] = useState(false)
     const [selectedIngredient, setSelectedIngredient] = useState(null)
     const [quantity, setQuantity] = useState(0)
-    const [listIngredients, setListIngredients] = useState([])
-    const [page, setPage] = useState(1)
-    const [totalPages, setTotalPages] = useState(0)
-    const [perPage, setPerPage] = useState(50)
 
     useEffect(() => {
         if (!selectedIngredient?.quantity) {
@@ -38,33 +34,23 @@ export default function OverlayIngredients({ isOpen, onOverlayIngredientClose, s
     }, [selectedIngredient?.quantity])
 
     useEffect(() => {
-        if (listIngredients.length === 0) {
-            getIngredients(1);
+        if (ingredientContext.listIngredients.length === 0) {
+            ingredientContext.getIngredients(1);
         }
-    }, [listIngredients])
-
-    const getIngredients = (pageParam) => {
-        if (isLoading) return;
-        setIsLoading(true)
-        api.get(`foodingredient?page=${pageParam}&pageSize=${perPage}`)
-            .then(data => {
-                setTotalPages(data.data.pageCount);
-                setListIngredients([...listIngredients, ...data.data.results])
-                setIsLoading(false)
-            })
-            .catch(err => {
-                setIsLoading(false)
-            })
-    }
+    }, [ingredientContext.listIngredients])
 
     const handleEndReached = () => {
-        if (page > totalPages) return;
-        setPage(page + 1)
+        if (ingredientContext.page > ingredientContext.totalPages) return;
+        ingredientContext.setPage(ingredientContext.page + 1)
     }
 
     const handleTouchIngredient = (ingredient) => {
-        setSelectedIngredient({ ...ingredient, ingredientId: ingredient.id });
+        setSelectedIngredient({...ingredient, ingredientId: ingredient.id});
         setIsModalQuantityOpen(true)
+    }
+
+    const handleTouchQuantity = () => {
+        onOverlayIngredientClose(false)
     }
 
     const handleChangeQuantity = ({ nativeEvent: { eventCount, target, text } }) => {
@@ -80,11 +66,6 @@ export default function OverlayIngredients({ isOpen, onOverlayIngredientClose, s
         setSelectedIngredient({ ...selectedIngredient, quantity: parseFloat(quantity) })
     }
 
-    const refresh = () => {
-        setListIngredients([]);
-        setPage(1)
-    }
-
     return (
         <>
             <Modal isOpen={isOpen} onClose={() => onOverlayIngredientClose(false)}>
@@ -95,9 +76,9 @@ export default function OverlayIngredients({ isOpen, onOverlayIngredientClose, s
                         <SafeAreaView>
                             <FlatList
                                 nestedScrollEnabled
-                                data={listIngredients}
-                                refreshing={isLoading}
-                                onRefresh={() => refresh()}
+                                data={ingredientContext.listIngredients}
+                                refreshing={ingredientContext.isLoading}
+                                onRefresh={() => ingredientContext.refresh()}
                                 onEndReached={() => handleEndReached()}
                                 onEndReachedThreshold={0.8}
                                 renderItem={({ item }) => (

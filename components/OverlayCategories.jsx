@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     Button,
     Modal,
@@ -10,27 +10,50 @@ import {
     Spacer,
     FlatList
 } from "native-base"
-import { CategoryContext } from "../store/CategoriesStore";
 import { TouchableNativeFeedback, SafeAreaView, View } from 'react-native'
+import api from "../services/Axios";
 
 export default function OverlayCategories({ isOpen, onOverlayCategoryClose, selectedCategory }) {
 
-    const categoryContext = useContext(CategoryContext)
+    const [listCategory, setListCategory] = useState([])
+    const [isLoading, setIsLoading] = useState(false)
+    const [page, setPage] = useState(1)
+    const [perPage, setPerPage] = useState(50)
+    const [totalPages, setTotalPages] = useState(0)
 
     useEffect(() => {
-        if (categoryContext.listCategory.length === 0) {
-            categoryContext.getCategories(1);
+        if (listCategory.length === 0) {
+            getCategories(1);
         }
-    }, [categoryContext.listCategory])
+    }, [listCategory])
+
+    const getCategories = (pageParam) => {
+        if (isLoading) return;
+        setIsLoading(true)
+        api.get(`foodcategory?page=${pageParam}&pageSize=${perPage}`)
+            .then(data => {
+                setTotalPages(data.data.pageCount);
+                setListCategory([...listCategory, ...data.data.results])
+                setIsLoading(false)
+            })
+            .catch(err => {
+                setIsLoading(false)
+            })
+    }
 
     const handleEndReached = () => {
-        if (categoryContext.page > categoryContext.totalPages) return;
-        categoryContext.setPage(categoryContext.page + 1)
+        if (page > totalPages) return;
+        setPage(page + 1)
     }
 
     const handleTouch = (category) => {
         selectedCategory(category);
         onOverlayCategoryClose(false)
+    }
+
+    const refresh = () => {
+        setListCategory([]);
+        setPage(1)
     }
 
     return (
@@ -42,9 +65,9 @@ export default function OverlayCategories({ isOpen, onOverlayCategoryClose, sele
                     <SafeAreaView>
                         <FlatList
                             nestedScrollEnabled
-                            data={categoryContext.listCategory}
-                            refreshing={categoryContext.isLoading}
-                            onRefresh={() => categoryContext.refresh()}
+                            data={listCategory}
+                            refreshing={isLoading}
+                            onRefresh={() => refresh()}
                             onEndReached={() => handleEndReached()}
                             onEndReachedThreshold={0.8}
                             renderItem={({ item }) => (
