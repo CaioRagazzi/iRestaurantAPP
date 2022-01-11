@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     Button,
     Modal,
@@ -11,46 +11,62 @@ import {
     FlatList,
     FormControl,
     Input,
-    WarningOutlineIcon
+    WarningOutlineIcon,
+    TextArea
 } from "native-base"
-import { IngredientContext } from "../store/IngredientsStore";
 import { TouchableNativeFeedback, SafeAreaView, View } from 'react-native'
+import api from "../services/Axios";
 
-export default function OverlayMenu({ isOpen, onOverlayIngredientClose, selectedOverlayIngredient }) {
+export default function OverlayMenu({ isOpen, onOverlayMenuClose, selectedOverlayMenu }) {
 
-    const ingredientContext = useContext(IngredientContext)
+    const [isLoading, setIsLoading] = useState(false)
     const [isModalQuantityOpen, setIsModalQuantityOpen] = useState(false)
-    const [selectedIngredient, setSelectedIngredient] = useState(null)
-    const [quantity, setQuantity] = useState(0)
+    const [selectedMenu, setSelectedMenu] = useState(null)
+    const [quantity, setQuantity] = useState()
+    const [listMenus, setListMenus] = useState([])
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(0)
+    const [perPage, setPerPage] = useState(50)
+    const [additionalComment, setAdditionalComment] = useState('')
 
     useEffect(() => {
-        if (!selectedIngredient?.quantity) {
+        if (!selectedMenu?.quantity) {
             return
         }
-        selectedOverlayIngredient(selectedIngredient);
+        selectedOverlayMenu(selectedMenu);
         setIsModalQuantityOpen(false)
-        onOverlayIngredientClose(false)
-        setQuantity(0)
-    }, [selectedIngredient?.quantity])
+        onOverlayMenuClose(false)
+        setQuantity()
+    }, [selectedMenu?.quantity])
 
     useEffect(() => {
-        if (ingredientContext.listIngredients.length === 0) {
-            ingredientContext.getIngredients(1);
+        if (listMenus.length === 0) {
+            getMenus(1);
         }
-    }, [ingredientContext.listIngredients])
+    }, [listMenus])
+
+    const getMenus = (pageParam) => {
+        if (isLoading) return;
+        setIsLoading(true)
+        api.get(`menu?page=${pageParam}&pageSize=${perPage}`)
+            .then(data => {
+                setTotalPages(data.data.pageCount);
+                setListMenus([...listMenus, ...data.data.results])
+                setIsLoading(false)
+            })
+            .catch(err => {
+                setIsLoading(false)
+            })
+    }
 
     const handleEndReached = () => {
-        if (ingredientContext.page > ingredientContext.totalPages) return;
-        ingredientContext.setPage(ingredientContext.page + 1)
+        if (page > totalPages) return;
+        setPage(page + 1)
     }
 
-    const handleTouchIngredient = (ingredient) => {
-        setSelectedIngredient({...ingredient, ingredientId: ingredient.id});
+    const handleTouchMenu = (menu) => {
+        setSelectedMenu({ ...menu, menuId: menu.id });
         setIsModalQuantityOpen(true)
-    }
-
-    const handleTouchQuantity = () => {
-        onOverlayIngredientClose(false)
     }
 
     const handleChangeQuantity = ({ nativeEvent: { eventCount, target, text } }) => {
@@ -58,32 +74,42 @@ export default function OverlayMenu({ isOpen, onOverlayIngredientClose, selected
     }
 
     const handleCloseModalQuantity = () => {
-        setQuantity(0)
+        setQuantity()
         setIsModalQuantityOpen(false)
     }
 
     const saveQuantity = () => {
-        setSelectedIngredient({ ...selectedIngredient, quantity: parseFloat(quantity) })
+        setSelectedMenu({ ...selectedMenu, quantity: parseFloat(quantity), additionalComment: additionalComment })
+        setQuantity()
+    }
+
+    const refresh = () => {
+        setListMenus([]);
+        setPage(1)
+    }
+
+    const handleChangeComment = ({ nativeEvent: { eventCount, target, text } }) => {
+        setAdditionalComment(text)
     }
 
     return (
         <>
-            <Modal isOpen={isOpen} onClose={() => onOverlayIngredientClose(false)}>
+            <Modal isOpen={isOpen} onClose={() => onOverlayMenuClose(false)}>
                 <Modal.Content maxWidth="400px">
                     <Modal.CloseButton />
-                    <Modal.Header>Select Ingredient</Modal.Header>
+                    <Modal.Header>Select Menu</Modal.Header>
                     <View style={{ height: '80%' }}>
                         <SafeAreaView>
                             <FlatList
                                 nestedScrollEnabled
-                                data={ingredientContext.listIngredients}
-                                refreshing={ingredientContext.isLoading}
-                                onRefresh={() => ingredientContext.refresh()}
+                                data={listMenus}
+                                refreshing={isLoading}
+                                onRefresh={() => refresh()}
                                 onEndReached={() => handleEndReached()}
                                 onEndReachedThreshold={0.8}
                                 renderItem={({ item }) => (
                                     <TouchableNativeFeedback
-                                        onPress={() => handleTouchIngredient(item)}>
+                                        onPress={() => handleTouchMenu(item)}>
                                         <Box
                                             borderBottomWidth="1"
                                             _dark={{
@@ -132,7 +158,7 @@ export default function OverlayMenu({ isOpen, onOverlayIngredientClose, selected
                                 variant="ghost"
                                 colorScheme="blueGray"
                                 onPress={() => {
-                                    onOverlayIngredientClose(false)
+                                    onOverlayMenuClose(false)
                                 }}
                             >
                                 Cancel
@@ -153,15 +179,28 @@ export default function OverlayMenu({ isOpen, onOverlayIngredientClose, selected
                                 md: "25%",
                             }}
                         >
-                            <FormControl.Label>{selectedIngredient?.name} ({selectedIngredient?.unit})</FormControl.Label>
+                            <FormControl.Label>{selectedMenu?.name}</FormControl.Label>
                             <Input
-                                value={quantity.toString()}
+                                value={quantity?.toString()}
                                 onChange={handleChangeQuantity}
                                 keyboardType='decimal-pad'
-                                placeholder={`Enter ${selectedIngredient?.unit}`} />
+                                placeholder={`Enter quantity`} />
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                {selectedIngredient?.unit} cannot be empty
+                                {selectedMenu?.unit} cannot be empty
                             </FormControl.ErrorMessage>
+
+                        </FormControl>
+                        <FormControl
+                            w={{
+                                base: "75%",
+                                md: "25%",
+                            }}
+                        >
+                            <FormControl.Label>Additional comment</FormControl.Label>
+                            <TextArea
+                                value={additionalComment.toString()}
+                                onChange={handleChangeComment}
+                                placeholder={`Comment`} />
                         </FormControl>
                     </Modal.Body>
                     <Modal.Footer>

@@ -51,7 +51,7 @@ export default function Navigation() {
         <BottomTab.Screen
           name="Order"
           component={OrderNavigator}
-          options={({ navigation }) => ({
+          options={({ navigation }) => ({           
             headerShown: false,
             tabBarIcon: ({ color }) => <TabBarIcon name="cart-plus" color={color} />
           })}

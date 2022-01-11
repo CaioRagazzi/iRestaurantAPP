@@ -1,9 +1,11 @@
-import { IconButton, Icon, Fab, HamburgerIcon } from "native-base";
-import { AntDesign } from "@expo/vector-icons"
-import { View } from "react-native";
-import React, { useLayoutEffect } from "react";
+import { IconButton, Icon, HamburgerIcon, Stack, AddIcon } from "native-base";
+import { Text } from "react-native";
+import React, { useLayoutEffect, useState } from "react";
+import FAB from 'react-native-fab'
 
 export default function OrderScreen({ navigation }) {
+
+    const [isOverlayMenuOpen, setIsOverlayMenuOpen] = useState(false)
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -17,14 +19,16 @@ export default function OrderScreen({ navigation }) {
         })
     })
 
+    
+
     return (
-        <View style={{ flex: 1 }}>
-            {/* <Fab
-                size="sm"
-                style={{ marginBottom: 48 }}
-                onPress={() => navigation.navigate('SaveOrder')}
-                icon={<Icon color="white" as={<AntDesign name="plus" />} size="sm" />}
-            /> */}
-        </View>
+        <Stack space={4} w="100%" alignItems="center" marginTop="10" style={{ flex: 1 }} >
+            <FAB
+                buttonColor="#06b6d4"
+                iconTextColor="#FFFFFF"
+                onClickAction={() => { navigation.navigate('SaveOrder') }}
+                visible={true}
+                iconTextComponent={<AddIcon size={4} />} />
+        </Stack >
     )
 }
