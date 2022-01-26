@@ -81,6 +81,7 @@ export default function OverlayMenu({ isOpen, onOverlayMenuClose, selectedOverla
     const saveQuantity = () => {
         setSelectedMenu({ ...selectedMenu, quantity: parseFloat(quantity), additionalComment: additionalComment })
         setQuantity()
+        setAdditionalComment('')
     }
 
     const refresh = () => {
@@ -92,9 +93,15 @@ export default function OverlayMenu({ isOpen, onOverlayMenuClose, selectedOverla
         setAdditionalComment(text)
     }
 
+    const handleOnCloseModal = () => {
+        onOverlayMenuClose(false)
+        setQuantity()
+        setAdditionalComment('')
+    }
+
     return (
         <>
-            <Modal isOpen={isOpen} onClose={() => onOverlayMenuClose(false)}>
+            <Modal isOpen={isOpen} onClose={() => handleOnCloseModal()}>
                 <Modal.Content maxWidth="400px">
                     <Modal.CloseButton />
                     <Modal.Header>Select Menu</Modal.Header>
