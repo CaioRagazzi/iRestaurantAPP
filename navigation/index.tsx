@@ -20,6 +20,7 @@ import SaveIngredientScreen from '../screens/Ingredients/SaveIngredientScreen';
 import IngredientContextProvider from "../store/IngredientsStore";
 import CategoryContextProvider from "../store/CategoriesStore";
 import MenuContextProvider from "../store/MenuStore";
+import OrderContextProvider from "../store/OrderStore";
 import SaveMenuScreen from '../screens/Menu/SaveMenuScreen';
 import SaveOrderScreen from '../screens/Order/SaveOrderScreen';
 
@@ -51,7 +52,7 @@ export default function Navigation() {
         <BottomTab.Screen
           name="Order"
           component={OrderNavigator}
-          options={({ navigation }) => ({           
+          options={({ navigation }) => ({
             headerShown: false,
             tabBarIcon: ({ color }) => <TabBarIcon name="cart-plus" color={color} />
           })}
@@ -62,10 +63,12 @@ export default function Navigation() {
 
   function OrderNavigator() {
     return (
-      <Stack.Navigator>
-        <Stack.Screen name="ListOrder" component={OrderScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="SaveOrder" component={SaveOrderScreen} options={{ headerShown: true }} />
-      </Stack.Navigator>
+      <OrderContextProvider>
+        <Stack.Navigator>
+          <Stack.Screen name="ListOrder" component={OrderScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="SaveOrder" component={SaveOrderScreen} options={{ headerShown: true }} />
+        </Stack.Navigator>
+      </OrderContextProvider>
     );
   }
 

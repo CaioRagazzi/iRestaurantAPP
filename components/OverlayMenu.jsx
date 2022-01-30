@@ -65,7 +65,7 @@ export default function OverlayMenu({ isOpen, onOverlayMenuClose, selectedOverla
     }
 
     const handleTouchMenu = (menu) => {
-        setSelectedMenu({ ...menu, menuId: menu.id });
+        setSelectedMenu({ ...menu, menuId: menu.id , name: menu.name});
         setIsModalQuantityOpen(true)
     }
 

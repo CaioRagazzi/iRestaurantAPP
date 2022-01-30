@@ -48,7 +48,6 @@ export default function SaveMenuScreen({ route, navigation }) {
 
         const params = route.params;
         if (params) {
-            console.log(params.menu);
             const ingredients = params.menu.menuIngredients.map(
                 (menuIngre) => {
                     return {
@@ -151,7 +150,6 @@ export default function SaveMenuScreen({ route, navigation }) {
         }
 
         Keyboard.dismiss();
-        console.log(selectedIngredients);
         setLoading(true);
         api.put(`menu/${id}`, {
             name: name,
@@ -170,7 +168,6 @@ export default function SaveMenuScreen({ route, navigation }) {
             menuContext.refresh();
             navigation.goBack();
         }).catch(data => {
-            // console.log(data.response.data);
             setLoading(false);
             toast.show({
                 title: "Error!",
@@ -217,171 +214,163 @@ export default function SaveMenuScreen({ route, navigation }) {
                 <Spinner accessibilityLabel="Loading posts" size="lg" />
             </Stack>
             :
-            <ScrollView
-                _contentContainerStyle={{
-                    px: "20px",
-                    mb: "4",
-                    minW: "72",
-                }}
-            >
-                <Stack space={4} w="100%" alignItems="center" marginTop="10">
-                    <FormControl
-                        isInvalid={!name}
-                        w={{
-                            base: "75%",
-                            md: "100%",
-                        }}
-                    >
-                        <FormControl.Label>Name</FormControl.Label>
-                        <Input
-                            value={name}
-                            onChange={handleChangeName}
-                            autoCapitalize="none"
-                            InputLeftElement={
-                                <Icon
-                                    as={<MaterialIcons name="person" />}
-                                    size={5}
-                                    ml="2"
-                                    color="muted.400"
-                                />
-                            }
-                            placeholder="Name"
-                        />
-                        <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                            Name cannot be empty.
-                        </FormControl.ErrorMessage>
-                    </FormControl>
-                    <FormControl
-                        isInvalid={!category}
-                        w={{
-                            base: "75%",
-                            md: "100%",
-                        }}
-                    >
-                        <Pressable onPress={() => setIsOverlayCategoryOpen(true)}>
-                            <View pointerEvents="none">
-                                <FormControl.Label>Category</FormControl.Label>
-                                <Input
-                                    value={category?.name}
-                                    autoCapitalize="none"
-                                    InputLeftElement={
-                                        <Icon
-                                            as={<MaterialIcons name="person" />}
-                                            size={5}
-                                            ml="2"
-                                            color="muted.400"
-                                        />
-                                    }
-                                    placeholder="Category"
-                                />
-                            </View>
-                        </Pressable>
-                        <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                            Category cannot be empty.
-                        </FormControl.ErrorMessage>
-                    </FormControl>
-                    <FormControl
-                        isInvalid={!name}
-                        w={{
-                            base: "75%",
-                            md: "100%",
-                        }}
-                    >
-                        <Input
-                            value={description}
-                            numberOfLines={8}
-                            onChange={handleChangeDescription}
-                            autoCapitalize="none"
-                            InputLeftElement={
-                                <Icon
-                                    as={<MaterialIcons name="person" />}
-                                    size={5}
-                                    ml="2"
-                                    color="muted.400"
-                                />
-                            }
-                            placeholder="Description"
-                        />
-                    </FormControl>
-                    <Divider my="2" bg="black" thickness={0.5} width="80%" />
-                    <View style={{ width: '85%' }}>
-                        <Heading fontSize="lg">
-                            Ingredients
-                        </Heading>
-                        {
-                            selectedIngredients.map((item) => {
-                                return (
-                                    <Box
-                                        borderBottomWidth="1"
-                                        _dark={{
-                                            borderColor: "gray.600",
-                                        }}
-                                        borderColor="coolGray.200"
-                                        pl="4"
-                                        pr="5"
-                                        py="2"
-                                        key={item.id}
-                                    >
-                                        <HStack space={3} justifyContent="space-between">
-                                            <VStack>
-                                                <Text
-                                                    _dark={{
-                                                        color: "warmGray.50",
-                                                    }}
-                                                    color="coolGray.800"
-                                                    bold
-                                                >
-                                                    Ingredient: {item.name}
-                                                </Text>
-                                                <Text
-                                                    color="coolGray.600"
-                                                    _dark={{
-                                                        color: "warmGray.200",
-                                                    }}
-                                                >
-                                                    {item.quantity} {item.unit}
-                                                </Text>
-                                            </VStack>
-                                            <Spacer />
-                                            <View style={{ justifyContent: 'center', paddingRight: 10 }}>
-                                                <IconButton
-                                                    colorScheme="red"
-                                                    onPress={() => removeIngFromSelected(item)}
-                                                    variant="solid"
-                                                    size="30"
-                                                    _icon={{
-                                                        as: AntDesign,
-                                                        name: "minus",
-                                                    }}
-                                                />
-                                            </View>
-                                        </HStack>
-                                    </Box>
-                                )
-                            })
+            <Stack space={4} w="100%" alignItems="center" marginTop="10" style={{ flex: 1 }} >
+                <FormControl
+                    isInvalid={!name}
+                    w={{
+                        base: "75%",
+                        md: "100%",
+                    }}
+                >
+                    <FormControl.Label>Name</FormControl.Label>
+                    <Input
+                        value={name}
+                        onChange={handleChangeName}
+                        autoCapitalize="none"
+                        InputLeftElement={
+                            <Icon
+                                as={<MaterialIcons name="person" />}
+                                size={5}
+                                ml="2"
+                                color="muted.400"
+                            />
                         }
-                    </View>
-                    <Fab
-                        borderRadius="full"
-                        size="sm"
-                        label='Add Ingr.'
-                        onPress={() => setIsOverlayIngredientOpen(true)}
-                        icon={<Icon color="white" as={<AntDesign name="plus" />} size="sm" />}
+                        placeholder="Name"
                     />
-                    <CategoryContextProvider>
-                        <OverlayCategories
-                            isOpen={isOverlayCategoryOpen}
-                            onOverlayCategoryClose={() => setIsOverlayCategoryOpen(false)}
-                            selectedCategory={(overlaySelectedCategory) => setCategory(overlaySelectedCategory)} />
-                    </CategoryContextProvider>
-                    <IngredientContextProvider>
-                        <OverlayIngredients
-                            isOpen={isOverlayIngredientOpen}
-                            onOverlayIngredientClose={() => setIsOverlayIngredientOpen(false)}
-                            selectedOverlayIngredient={(overlaySelectedIngredient) => handleSelectedIngredient(overlaySelectedIngredient)}>
-                        </OverlayIngredients>
-                    </IngredientContextProvider>
-                </Stack>
-            </ScrollView>
+                    <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                        Name cannot be empty.
+                    </FormControl.ErrorMessage>
+                </FormControl>
+                <FormControl
+                    isInvalid={!category}
+                    w={{
+                        base: "75%",
+                        md: "100%",
+                    }}
+                >
+                    <Pressable onPress={() => setIsOverlayCategoryOpen(true)}>
+                        <View pointerEvents="none">
+                            <FormControl.Label>Category</FormControl.Label>
+                            <Input
+                                value={category?.name}
+                                autoCapitalize="none"
+                                InputLeftElement={
+                                    <Icon
+                                        as={<MaterialIcons name="person" />}
+                                        size={5}
+                                        ml="2"
+                                        color="muted.400"
+                                    />
+                                }
+                                placeholder="Category"
+                            />
+                        </View>
+                    </Pressable>
+                    <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                        Category cannot be empty.
+                    </FormControl.ErrorMessage>
+                </FormControl>
+                <FormControl
+                    isInvalid={!name}
+                    w={{
+                        base: "75%",
+                        md: "100%",
+                    }}
+                >
+                    <Input
+                        value={description}
+                        numberOfLines={8}
+                        onChange={handleChangeDescription}
+                        autoCapitalize="none"
+                        InputLeftElement={
+                            <Icon
+                                as={<MaterialIcons name="person" />}
+                                size={5}
+                                ml="2"
+                                color="muted.400"
+                            />
+                        }
+                        placeholder="Description"
+                    />
+                </FormControl>
+                <Divider my="2" bg="black" thickness={0.5} width="80%" />
+                <ScrollView style={{ width: '85%' }}>
+                    <Heading fontSize="lg">
+                        Ingredients
+                    </Heading>
+                    {
+                        selectedIngredients.map((item) => {
+                            return (
+                                <Box
+                                    borderBottomWidth="1"
+                                    _dark={{
+                                        borderColor: "gray.600",
+                                    }}
+                                    borderColor="coolGray.200"
+                                    pl="4"
+                                    pr="5"
+                                    py="2"
+                                    key={item.id}
+                                >
+                                    <HStack space={3} justifyContent="space-between">
+                                        <VStack>
+                                            <Text
+                                                _dark={{
+                                                    color: "warmGray.50",
+                                                }}
+                                                color="coolGray.800"
+                                                bold
+                                            >
+                                                Ingredient: {item.name}
+                                            </Text>
+                                            <Text
+                                                color="coolGray.600"
+                                                _dark={{
+                                                    color: "warmGray.200",
+                                                }}
+                                            >
+                                                {item.quantity} {item.unit}
+                                            </Text>
+                                        </VStack>
+                                        <Spacer />
+                                        <View style={{ justifyContent: 'center', paddingRight: 10 }}>
+                                            <IconButton
+                                                colorScheme="red"
+                                                onPress={() => removeIngFromSelected(item)}
+                                                variant="solid"
+                                                size="30"
+                                                _icon={{
+                                                    as: AntDesign,
+                                                    name: "minus",
+                                                }}
+                                            />
+                                        </View>
+                                    </HStack>
+                                </Box>
+                            )
+                        })
+                    }
+                </ScrollView>
+                <Fab
+                    borderRadius="full"
+                    size="sm"
+                    label='Add Ingr.'
+                    onPress={() => setIsOverlayIngredientOpen(true)}
+                    icon={<Icon color="white" as={<AntDesign name="plus" />} size="sm" />}
+                />
+                <CategoryContextProvider>
+                    <OverlayCategories
+                        isOpen={isOverlayCategoryOpen}
+                        onOverlayCategoryClose={() => setIsOverlayCategoryOpen(false)}
+                        selectedCategory={(overlaySelectedCategory) => setCategory(overlaySelectedCategory)} />
+                </CategoryContextProvider>
+                <IngredientContextProvider>
+                    <OverlayIngredients
+                        isOpen={isOverlayIngredientOpen}
+                        onOverlayIngredientClose={() => setIsOverlayIngredientOpen(false)}
+                        selectedOverlayIngredient={(overlaySelectedIngredient) => handleSelectedIngredient(overlaySelectedIngredient)}>
+                    </OverlayIngredients>
+                </IngredientContextProvider>
+            </Stack>
     )
 }

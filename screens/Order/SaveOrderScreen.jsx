@@ -1,15 +1,17 @@
-import { Stack, FormControl, useToast, AddIcon, Input, Icon, WarningOutlineIcon, Spinner, IconButton } from "native-base";
+import { Stack, FormControl, useToast, AddIcon, Input, Icon, WarningOutlineIcon, Spinner, IconButton, Heading, Box, HStack, VStack, Text, Spacer, Divider } from "native-base";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
-import React, { useLayoutEffect, useState } from "react";
-import { FlatList, Text, View } from "react-native";
+import React, { useLayoutEffect, useState, useContext, useEffect } from "react";
+import { View, Keyboard, ScrollView } from "react-native";
 import OverlayMenu from "../../components/OverlayMenu";
-import { Button as ButtonPPW, Card } from 'react-native-paper';
 import FAB from 'react-native-fab'
 import api from "../../services/Axios";
+import { OrderContext } from "../../store/OrderStore";
 
 export default function SaveOrderScreen({ route, navigation }) {
 
+    const orderContext = useContext(OrderContext);
     const [table, setTable] = useState('')
+    const [id, setId] = useState(0);
     const [description, setDescription] = useState('')
     const [isOverlayMenuOpen, setIsOverlayMenuOpen] = useState(false)
     const [selectedMenu, setSelectedMenu] = useState([])
@@ -17,20 +19,31 @@ export default function SaveOrderScreen({ route, navigation }) {
     const [isEditing, setIsEditing] = useState(false);
     const toast = useToast()
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const params = route.params;
         if (params) {
+            setId(params.order.id)
+            setTable(params.order.table);
+            setDescription(params.order.description)
+            params.order.orderMenus.forEach(menu => {
+                setSelectedMenu(old => [...old, {menuId: menu.id, name: menu.menu.name, ...menu}])
+            })
             setIsEditing(true);
-        } else {
-
         }
+    }, []);
+
+
+    useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => {
                 return (
                     loading ? <Spinner size="lg" /> :
                         <IconButton
                             colorScheme="red"
-                            onPress={() => isEditing ? handleEditOrder() : handleSaveOrder()}
+                            onPress={() => {
+                                isEditing ? handleEditOrder() : handleSaveOrder()
+                                Keyboard.dismiss()
+                            }}
                             variant="ghost"
                             size="30"
                             borderRadius="full"
@@ -46,12 +59,7 @@ export default function SaveOrderScreen({ route, navigation }) {
 
     }, [navigation, table, description, loading, selectedMenu]);
 
-    const handleEditOrder = () => {
-        console.log('edit order');
-    }
-
-    const handleSaveOrder = () => {
-        setLoading(true)
+    const validations = () => {
         if (!table.trim()) {
             toast.show({
                 title: "Warning!",
@@ -60,7 +68,7 @@ export default function SaveOrderScreen({ route, navigation }) {
                 duration: 3000
             })
             setLoading(false)
-            return
+            return false;
         }
 
         if (!selectedMenu || selectedMenu.length === 0) {
@@ -71,10 +79,50 @@ export default function SaveOrderScreen({ route, navigation }) {
                 duration: 3000
             })
             setLoading(false)
-            return
+            return false;
         }
 
+        return true
+    }
+
+    const handleEditOrder = () => {
+        setLoading(true)
+
+        if (!validations()) return;
+
+        api.put(`order/${id}`, {
+            Table: table,
+            Description: description,
+            OrderMenus: selectedMenu
+        }).then(data => {
+            setLoading(false);
+            toast.show({
+                title: "Created!",
+                status: "success",
+                description: "Order Updated!.",
+                duration: 3000
+            })
+            orderContext.refresh();
+            setLoading(false)
+            navigation.goBack();
+        }).catch(err => {
+            setLoading(false);
+            toast.show({
+                title: "Error!",
+                status: "error",
+                description: "Error updating order =(.",
+                duration: 3000
+            })
+            setLoading(false)
+        })
+    }
+
+    const handleSaveOrder = () => {
+        setLoading(true)
+        if (!validations()) return;
+
         api.post('order', {
+            Table: table,
             Description: description,
             OrderMenus: selectedMenu
         }).then(data => {
@@ -85,10 +133,10 @@ export default function SaveOrderScreen({ route, navigation }) {
                 description: "Order Created!.",
                 duration: 3000
             })
-            navigation.goBack();
+            orderContext.refresh();
             setLoading(false)
+            navigation.goBack();
         }).catch(err => {
-            console.log(err);
             setLoading(false);
             toast.show({
                 title: "Error!",
@@ -131,78 +179,112 @@ export default function SaveOrderScreen({ route, navigation }) {
 
     return (
         <Stack space={4} w="100%" alignItems="center" marginTop="10" style={{ flex: 1 }}>
-            <View style={{ flexGrow: 1, width: '100%', height: '29%', alignItems: 'center' }}>
-                <FormControl
-                    isInvalid={!table}
-                    w={{
-                        base: "75%",
-                        md: "100%",
-                    }}
-                    style={{ paddingBottom: 16 }}
-                >
-                    <Input
-                        value={table}
-                        onChange={handleChangeTable}
-                        autoCapitalize="none"
-                        InputLeftElement={
-                            <Icon
-                                as={<MaterialIcons name="person" />}
-                                size={5}
-                                ml="2"
-                                color="muted.400"
-                            />
-                        }
-                        placeholder="Table"
-                    />
-                    <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                        Table cannot be empty.
-                    </FormControl.ErrorMessage>
-                </FormControl>
-                <FormControl
-                    isInvalid={!description}
-                    w={{
-                        base: "75%",
-                        md: "100%",
-                    }}
-                >
-                    <Input
-                        value={description}
-                        numberOfLines={5}
-                        onChange={handleDescriptionTable}
-                        autoCapitalize="none"
-                        InputLeftElement={
-                            <Icon
-                                as={<MaterialIcons name="person" />}
-                                size={5}
-                                ml="2"
-                                color="muted.400"
-                            />
-                        }
-                        placeholder="Description"
-                    />
-                </FormControl>
-            </View>
-            <View style={{ flexGrow: 1, width: '100%', height: '60%', alignItems: 'center' }}>
-                <FlatList
-                    style={{ flexGrow: 1, width: '100%' }}
-                    contentContainerStyle={{ flexGrow: 1, alignItems: 'center' }}
-                    data={selectedMenu}
-                    numColumns={2}
-                    renderItem={({ item }) => (
-                        <Card style={{ flexGrow: 1, margin: 5, width: '40%' }}>
-                            <Card.Title
-                                title={item.name}
-                                subtitle={`Quantity: ${item.quantity}`} />
-                            {/* <Card.Cover source={{ uri: 'https://picsum.photos/700' }} /> */}
-                            <Card.Actions>
-                                <ButtonPPW
-                                    icon="delete"
-                                    onPress={() => removeMenuFromSelected(item)}>Remove</ButtonPPW>
-                            </Card.Actions>
-                        </Card>
-                    )}
-                    keyExtractor={(item) => item.id} />
-            </View>
+            <FormControl
+                isInvalid={!table}
+                w={{
+                    base: "75%",
+                    md: "100%",
+                }}
+                style={{ paddingBottom: 16 }}
+            >
+                <Input
+                    value={table}
+                    onChange={handleChangeTable}
+                    autoCapitalize="none"
+                    InputLeftElement={
+                        <Icon
+                            as={<MaterialIcons name="person" />}
+                            size={5}
+                            ml="2"
+                            color="muted.400"
+                        />
+                    }
+                    placeholder="Table"
+                />
+                <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                    Table cannot be empty.
+                </FormControl.ErrorMessage>
+            </FormControl>
+            <FormControl
+                w={{
+                    base: "75%",
+                    md: "100%",
+                }}
+            >
+                <Input
+                    value={description}
+                    numberOfLines={5}
+                    onChange={handleDescriptionTable}
+                    autoCapitalize="none"
+                    InputLeftElement={
+                        <Icon
+                            as={<MaterialIcons name="person" />}
+                            size={5}
+                            ml="2"
+                            color="muted.400"
+                        />
+                    }
+                    placeholder="Description"
+                />
+            </FormControl>
+            <Divider my="2" bg="black" thickness={0.5} width="80%" />
+            <ScrollView style={{ width: '85%' }}>
+                <Heading fontSize="lg">
+                    Order Items:
+                </Heading>
+                {
+                    selectedMenu.map((item) => {
+                        return (
+                            <Box
+                                borderBottomWidth="1"
+                                _dark={{
+                                    borderColor: "gray.600",
+                                }}
+                                borderColor="coolGray.200"
+                                pl="4"
+                                pr="5"
+                                py="2"
+                                key={item.menuId}
+                            >
+                                <HStack space={3} justifyContent="space-between">
+                                    <VStack>
+                                        <Text
+                                            _dark={{
+                                                color: "warmGray.50",
+                                            }}
+                                            color="coolGray.800"
+                                            bold
+                                        >
+                                            {item.name}
+                                        </Text>
+                                        <Text
+                                            color="coolGray.600"
+                                            _dark={{
+                                                color: "warmGray.200",
+                                            }}
+                                        >
+                                            Qtd: {item.quantity}
+                                        </Text>
+                                    </VStack>
+                                    <Spacer />
+                                    <View style={{ justifyContent: 'center', paddingRight: 10 }}>
+                                        <IconButton
+                                            colorScheme="red"
+                                            onPress={() => removeMenuFromSelected(item)}
+                                            variant="solid"
+                                            size="30"
+                                            _icon={{
+                                                as: AntDesign,
+                                                name: "minus",
+                                            }}
+                                        />
+                                    </View>
+                                </HStack>
+                            </Box>
+                        )
+                    })
+                }
+            </ScrollView>
 
             <FAB
                 buttonColor="#06b6d4"
